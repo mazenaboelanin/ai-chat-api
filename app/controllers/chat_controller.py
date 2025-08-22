@@ -1,4 +1,5 @@
 from flask import request, jsonify
+from ..utils.chat_utils import map_ai_agent_request_data
 from config.db import db
 from ..services.ai_agent_api_service import request_ai_agent
 from ..models.message import Message
@@ -51,18 +52,10 @@ def get_answer():
   if not user:
     return jsonify({"error": f"No user found with id {user_id}"}), 404
 
-
-  mappedData = data.copy()
-  mappedData["stream"] = False
-
-  if "question" in mappedData:
-    mappedData["prompt"] = mappedData.pop("question")
-
-  if "user_id" in mappedData:
-    mappedData.pop("user_id")
+  mapped_data = map_ai_agent_request_data(data)
 
   try:
-    response = request_ai_agent(mappedData)
+    response = request_ai_agent(mapped_data)
 
     if response:
       print("########### response", response)

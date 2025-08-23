@@ -1,25 +1,22 @@
 from flask import request, jsonify
+from ..services.db.chat_db_service import create_new_message, get_all_messages, get_messages_by_user_id
 from ..utils.db_validators import validate_user_exists
 from ..utils.input_validators import validate_user_input
 from ..utils.chat_utils import map_ai_agent_request_data
-from config.db import db
 from ..services.ai_agent_api_service import request_ai_agent
-from ..models.message import Message
-from ..models.user import User
-from sqlalchemy import desc
 
 
+# @desc       get chat history for specific user
+# @route      GET api/v1/chat/history/<user_id>
+# @access     Public
 def get_chat_history(user_id):
   user, error_response = validate_user_exists(user_id)
   if error_response:
     return error_response
 
-  stmt = (
-    db.select(Message)
-    .where(Message.user_id == user_id)
-    .order_by(desc(Message.created_at))
-  )
-  messages = db.session.execute(stmt).scalars().all()
+  messages, error = get_messages_by_user_id(user_id)
+  if error:
+    return jsonify(error), 500
 
   return jsonify({
     "messages": [
@@ -35,6 +32,9 @@ def get_chat_history(user_id):
   }), 200
 
 
+# @desc       prompt the ai agent with question and get answer
+# @route      POST api/v1/chat/ask
+# @access     Public
 def get_answer():
   data = request.get_json()
   print("########### data", data)
@@ -58,13 +58,17 @@ def get_answer():
       print("########### response", response)
       print("######## response type:", type(response))
       print("######## response value:", response)
-      new_message = Message(
-        question=data["question"],
-        answer=response,
-        user_id=user.id, 
-      )
-      db.session.add(new_message)
-      db.session.commit()
+      message_data = {
+        "question": data["question"],
+        "answer": response,
+        "user_id": user.id, 
+      }
+      print("######## message_data value:", message_data)
+
+
+    new_message, error = create_new_message(message_data)
+    if error:
+      return jsonify(error), 500
     
     return jsonify({
       "success": True,
@@ -79,13 +83,17 @@ def get_answer():
       "error": str(e)
     }), 500
 
+# @desc       get all chats accross all users
+# @route      GET api/v1/chat/all
+# @access     Public
 def get_all_chats():
   try:
-    stmt = (
-      db.select(Message)
-      .order_by(desc(Message.created_at))
-    )
-    messages = db.session.execute(stmt).scalars().all()
+
+    messages, error  = get_all_messages()
+    if error:
+      return jsonify(error), 500
+    if not messages:
+      return jsonify({"error": "No messages found"}), 404
 
     return jsonify({
       "messages": [

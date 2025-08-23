@@ -1,4 +1,6 @@
 from flask import request, jsonify
+from ..utils.db_validators import validate_user_exists
+from ..utils.input_validators import validate_user_input
 from ..utils.chat_utils import map_ai_agent_request_data
 from config.db import db
 from ..services.ai_agent_api_service import request_ai_agent
@@ -8,12 +10,9 @@ from sqlalchemy import desc
 
 
 def get_chat_history(user_id):
-  if not user_id:
-    return jsonify({"error": "user_id is required"}), 400
-
-  user = db.session.get(User, user_id)
-  if not user:
-    return jsonify({"error": f"No user found with id {user_id}"}), 404
+  user, error_response = validate_user_exists(user_id)
+  if error_response:
+    return error_response
 
   stmt = (
     db.select(Message)
@@ -24,15 +23,15 @@ def get_chat_history(user_id):
 
   return jsonify({
     "messages": [
-        {
-            "id": message.id,
-            "answer": message.answer,
-            "question": message.question,
-            "user_id": message.user_id,
-            "created_at": message.created_at.isoformat() if message.created_at else None
-        }
+      {
+        "id": message.id,
+        "answer": message.answer,
+        "question": message.question,
+        "user_id": message.user_id,
+        "created_at": message.created_at.isoformat() if message.created_at else None
+      }
         for message in messages
-      ]
+    ]
   }), 200
 
 
@@ -40,17 +39,15 @@ def get_answer():
   data = request.get_json()
   print("########### data", data)
 
-  if not data or "model" not in data or "question" not in data:
-    return jsonify({"error": "Model and Question must be specified"}), 400
-  
-  if "user_id" not in data:
-    return jsonify({"error": "user_id is required"}), 400
+  error_response = validate_user_input(data, ["model", "question", "user_id"])
+  if error_response:
+      return error_response
 
   user_id = data["user_id"]
 
-  user = db.session.get(User, user_id)
-  if not user:
-    return jsonify({"error": f"No user found with id {user_id}"}), 404
+  user, error_response = validate_user_exists(user_id)
+  if error_response:
+      return error_response
 
   mapped_data = map_ai_agent_request_data(data)
 

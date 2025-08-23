@@ -1,5 +1,5 @@
 from flask import Blueprint
-from ..controllers.user_controller import create_user, get_user
+from ..controllers.user_controller import create_user, get_user, get_all_users
 
 user_bp = Blueprint("users", __name__, url_prefix="/api/v1/users")
 
@@ -14,3 +14,9 @@ def add_user():
 def fetch_user(id):
   print('=== get_user')
   return get_user(id)
+
+# GET /users/ → get all users
+@user_bp.route("/", methods=["GET"])
+def fetch_users():
+  print('=== get_user')
+  return get_all_users()

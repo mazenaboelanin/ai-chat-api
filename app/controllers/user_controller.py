@@ -1,5 +1,7 @@
 from flask import request, jsonify
 
+from app.services.db.user_db_service import create_new_user, get_users
+
 from ..utils.db_validators import validate_user_exists
 from ..utils.input_validators import validate_user_input
 from ..models.user import User
@@ -16,9 +18,9 @@ def create_user():
   if error_response:
     return error_response
 
-  new_user = User(name=data["name"], email=data["email"])
-  db.session.add(new_user)
-  db.session.commit()
+  new_user, error = create_new_user(data)
+  if error:
+    return jsonify(error), 400
 
   return jsonify({
       "id": new_user.id,
@@ -40,3 +42,22 @@ def get_user(user_id):
       "created_at": user.created_at.isoformat() if user.created_at else None
   }), 200
 
+
+def get_all_users():
+  users, error = get_users()
+  if error:
+      return jsonify(error), 500
+  if not users:
+      return jsonify({"error": "No users found"}), 404
+
+  return jsonify({
+    "users": [
+        {
+          "id": u.id,
+          "name": u.name,
+          "email": u.email,
+          "created_at": u.created_at.isoformat() if u.created_at else None
+        }
+        for u in users
+      ]
+  }), 200

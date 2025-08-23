@@ -1,14 +1,11 @@
 from flask import request, jsonify
-
-from app.services.db.user_db_service import create_new_user, get_users
-
+from ..services.db.user_db_service import create_new_user, get_users
 from ..utils.db_validators import validate_user_exists
 from ..utils.input_validators import validate_user_input
-from ..models.user import User
-from config.db import db
-from sqlalchemy import desc
 
-
+# @desc       create new user
+# @route      POST api/v1/users
+# @access     Public
 def create_user():
   data = request.get_json()
 
@@ -30,6 +27,9 @@ def create_user():
   }), 201
 
 
+# @desc       get specific user
+# @route      GET api/v1/users/<user_id>
+# @access     Public
 def get_user(user_id):
   user, error_response = validate_user_exists(user_id)
   if error_response:
@@ -42,7 +42,9 @@ def get_user(user_id):
       "created_at": user.created_at.isoformat() if user.created_at else None
   }), 200
 
-
+# @desc       get all users
+# @route      GET api/v1/users/
+# @access     Public
 def get_all_users():
   users, error = get_users()
   if error:

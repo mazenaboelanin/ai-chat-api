@@ -46,20 +46,23 @@ def get_user(user_id):
 # @route      GET api/v1/users/
 # @access     Public
 def get_all_users():
-  users, error = get_users()
+  page = request.args.get("page")
+  per_page = request.args.get("per_page")
+
+  users, error = get_users(page, per_page)
   if error:
-      return jsonify(error), 500
+    return jsonify(error), 500
   if not users:
-      return jsonify({"error": "No users found"}), 404
+    return jsonify({"error": "No users found"}), 404
 
   return jsonify({
     "users": [
-        {
-          "id": u.id,
-          "name": u.name,
-          "email": u.email,
-          "created_at": u.created_at.isoformat() if u.created_at else None
-        }
-        for u in users
-      ]
+      {
+        "id": u.id,
+        "name": u.name,
+        "email": u.email,
+        "created_at": u.created_at.isoformat() if u.created_at else None
+      }
+      for u in users
+    ]
   }), 200

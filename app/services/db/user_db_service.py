@@ -1,5 +1,6 @@
 from sqlalchemy import desc
 from sqlalchemy.exc import IntegrityError
+from app.utils.pagination_util import get_pagination_params
 from config.db import db
 from ...models.user import User
 
@@ -17,9 +18,16 @@ def create_new_user(user_data):
     return None, {"error": str(e)}
 
 
-def get_users():
+def get_users(page = None, per_page= None):
+  pagination = get_pagination_params(page, per_page)
+
   try:
-    stmt = db.select(User).order_by(desc(User.created_at))
+    stmt = (
+      db.select(User)
+      .order_by(desc(User.created_at))
+      .limit(pagination["limit"])
+      .offset(pagination["offset"])
+    )
     users = db.session.execute(stmt).scalars().all()
     return users, None
   except Exception as e:

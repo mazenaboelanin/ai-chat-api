@@ -7,14 +7,17 @@ from ..services.api.ai_agent_api_service import request_ai_agent
 
 
 # @desc       get chat history for specific user
-# @route      GET api/v1/chat/history/<user_id>
+# @route      GET api/v1/chat/history/<user_id>?page=1&per_page=2
 # @access     Public
 def get_chat_history(user_id):
+  page = request.args.get("page")
+  per_page = request.args.get("per_page")
+
   user, error_response = validate_user_exists(user_id)
   if error_response:
     return error_response
 
-  messages, error = get_messages_by_user_id(user_id)
+  messages, error = get_messages_by_user_id(user_id, page, per_page)
   if error:
     return jsonify(error), 500
 
@@ -84,12 +87,16 @@ def get_answer():
     }), 500
 
 # @desc       get all chats accross all users
-# @route      GET api/v1/chat/all
+# @route      GET api/v1/chat/all?page=1&per_page=5
 # @access     Public
 def get_all_chats():
+  page = request.args.get("page")
+  per_page = request.args.get("per_page")
+  print("===page", page)
+  print("===PER_PAGE", per_page)
   try:
 
-    messages, error  = get_all_messages()
+    messages, error  = get_all_messages(page, per_page)
     if error:
       return jsonify(error), 500
     if not messages:

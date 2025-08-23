@@ -1,15 +1,20 @@
 from flask import request, jsonify
+
+from ..utils.db_validators import validate_user_exists
+from ..utils.input_validators import validate_user_input
 from ..models.user import User
 from config.db import db
+from sqlalchemy import desc
+
 
 def create_user():
   data = request.get_json()
 
   print('=== data', data)
 
-
-  if not data or "name" not in data or "email" not in data:
-      return jsonify({"error": "Name and Email is required"}), 400
+  error_response = validate_user_input(data, ["name", "email"])
+  if error_response:
+    return error_response
 
   new_user = User(name=data["name"], email=data["email"])
   db.session.add(new_user)
@@ -24,11 +29,9 @@ def create_user():
 
 
 def get_user(user_id):
-  print('=== USER ID', user_id)
-  user = User.query.get(user_id)
-
-  if not user:
-      return jsonify({"error": "User not found"}), 404
+  user, error_response = validate_user_exists(user_id)
+  if error_response:
+    return error_response
 
   return jsonify({
       "id": user.id,
@@ -36,3 +39,4 @@ def get_user(user_id):
       "email": user.email,
       "created_at": user.created_at.isoformat() if user.created_at else None
   }), 200
+

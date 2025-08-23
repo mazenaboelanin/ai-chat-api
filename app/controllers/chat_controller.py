@@ -3,7 +3,7 @@ from ..services.db.chat_db_service import create_new_message, get_all_messages, 
 from ..utils.db_validators import validate_user_exists
 from ..utils.input_validators import validate_user_input
 from ..utils.chat_utils import map_ai_agent_request_data
-from ..services.ai_agent_api_service import request_ai_agent
+from ..services.api.ai_agent_api_service import request_ai_agent
 
 
 # @desc       get chat history for specific user

@@ -40,7 +40,6 @@ def get_chat_history(user_id):
 # @access     Public
 def get_answer():
   data = request.get_json()
-  print("########### data", data)
 
   error_response = validate_user_input(data, ["model", "question", "user_id"])
   if error_response:
@@ -58,16 +57,11 @@ def get_answer():
     response = request_ai_agent(mapped_data)
 
     if response:
-      print("########### response", response)
-      print("######## response type:", type(response))
-      print("######## response value:", response)
       message_data = {
         "question": data["question"],
         "answer": response,
         "user_id": user.id, 
       }
-      print("######## message_data value:", message_data)
-
 
     new_message, error = create_new_message(message_data)
     if error:
@@ -92,10 +86,8 @@ def get_answer():
 def get_all_chats():
   page = request.args.get("page")
   per_page = request.args.get("per_page")
-  print("===page", page)
-  print("===PER_PAGE", per_page)
-  try:
 
+  try:
     messages, error  = get_all_messages(page, per_page)
     if error:
       return jsonify(error), 500

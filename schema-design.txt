@@ -1,0 +1,5 @@
+User: id, name, email, created_at, updated_at
+
+Message:id, question, answer, user_id, created_at, updated_at
+
+user has many messages, message belongs to user

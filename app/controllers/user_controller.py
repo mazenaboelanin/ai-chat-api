@@ -9,8 +9,6 @@ from ..utils.input_validators import validate_user_input
 def create_user():
   data = request.get_json()
 
-  print('=== data', data)
-
   error_response = validate_user_input(data, ["name", "email"])
   if error_response:
     return error_response

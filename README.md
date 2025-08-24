@@ -12,6 +12,7 @@ The API manages **users** and **chat messages**, with built-in pagination and cl
 - [Setup & Installation](#setup--installation)
   - [Environment Variables](#3-environment-variables)
   - [Run Locally](#4-run-locally)
+  - [Ollama Setup](#5-setup-ollama)
   - [Run with Docker](#docker-setup)
 - [Database](#database)
 - [API Endpoints](#api-endpoints)
@@ -34,7 +35,8 @@ The full API documentation with request details and examples is available at:
 - User management (create, fetch, etc.)  
 - AI-powered chat with Ollama REST API  
 - Chat history stored in PostgreSQL (Supabase)
-- Pagination utility for APIs  
+- Pagination utility for APIs
+- User input and DB validations
 - Modular folder structure (controllers, services, routes, utils)  
 - Dockerized for easy deployment  
 
@@ -86,7 +88,24 @@ flask run
 
 The API will be available at: http://localhost:5000
 
-### 5. migration commands
+### 5. Setup Ollama
+
+Run Ollama Container
+```bash
+docker run -d -p 11434:11434 ollama/ollama
+```
+
+Check running containers
+```bash
+docker ps
+```
+
+Pull gemma3:1b Model
+```bash
+docker exec -it <container_id> ollama pull gemma3:1b
+```
+
+### 6. migration commands
 
 ```bash
 flask db init       # setup migrations folder
